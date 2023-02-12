@@ -1,18 +1,25 @@
 #!/usr/bin/python3
+import os
 import requests
-from bs4 import BeautifulSoup
+import re
 import pandas as pd
 import gzip
-from io import BytesIO
 import asyncio
-from aiohttp import ClientSession, TCPConnector, ClientTimeout
 import time
-import re
-import os
 import numpy as np
+import argparse
+
+from bs4 import BeautifulSoup
+from io import BytesIO
+from aiohttp import ClientSession, TCPConnector, ClientTimeout
+from mexico import parse_excel
 
 """ Bot who gets the booking hotels from Mexico formating their outputs for
 English characters. """
+
+parser = argparse.ArgumentParser(description='Country letter code to start')
+parser.add_argument('country', help='country code to the regex')
+args = parser.parse_args()
 
 """ Api Urls and empty lists for data """
 apartah = ["https://www.booking.com/sitembk-themed-city-gostinicy-index.xml",
@@ -35,8 +42,8 @@ apartah = ["https://www.booking.com/sitembk-themed-city-gostinicy-index.xml",
 "https://www.booking.com/sitembk-themed-city-mercure-index.xml"]
 
 apartahotels_list, reviews, links, themes, descriptions, titles, locations, hotels_scrap, final_links, formated_links = [], [], [], [], [], [], [], [], [], []
-argentina = re.compile(r"/mx/")
-argentina_sitemap = re.compile(r"-mx")
+argentina = re.compile(rf"/{args.country}/")
+argentina_sitemap = re.compile(rf"-{args.country}")
 params = {
     'lang': 'en-gb',
     'sb_price_type': 'total',
@@ -73,7 +80,6 @@ def extract_selectors(soup, selector):
         return soup.find(selector)
     except:
         return None
-
 
 def get_each_hotel_data(link, url):
     """ Get hotels data and append to lists """
@@ -169,8 +175,22 @@ async def fetch_1(url, session):
         except:
             pass
 
+def parse_results():
+    """ Get only english characters """
+    df_1 = pd.read_excel("mexico_first_step.xlsx")
+    df = pd.read_excel('mexico_first_step.xlsx')
+    df1 = df.drop_duplicates(keep='first')
+    df2 = df1.dropna()
+    df3 = df2[df2["Description"].str.contains("á|é|í|ó|ú|ñ|ü", case=False) == False]
+    df4 = df3[df3["Listing_url"].str.contains("á|é|í|ó|ú|ñ|ü", case=False) == False]
+    df5  = df4[df4["Themes"].str.contains("á|é|í|ó|ú|ñ|ü", case=False) == False]
+    df6 = df5[df5["Title"].str.contains("á|é|í|ó|ú|ñ|ü", case=False) == False]
+    new_df = pd.concat([df6, df_1], axis=0)
+    new_df1 = new_df.drop_duplicates(keep='first').dropna()
+    new_df1.to_excel('mexico_first_step.xlsx')
+
 def themed_country(site_list):
-    start = 0
+    """ Main function """
     apartahotel = get_soup(str(site_list)).loc
     for regions in apartahotel:
         sitemap_response = get_sitemap(regions)
@@ -179,7 +199,7 @@ def themed_country(site_list):
         if links_to_regions:
             for first in links_to_regions:
                 get_hotel_data(first)
-                time.sleep(8) # with 20 works
+                time.sleep(8) 
         format_1 = formated_links[:int(len(formated_links)/5)]
         number = len(format_1)
         format_2 = formated_links[int(number):(int(number*2))]
@@ -222,3 +242,4 @@ if __name__=='__main__':
         time.sleep(22)
         print(i)
         themed_country(i)
+    parse_results()
