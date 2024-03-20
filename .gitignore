@@ -5,6 +5,11 @@ __pycache__/
 *.pyd
 .Python
 env/
+venv/
+venv
+env
+/env
+/venv
 *.pot
 *.log
 *.egg-info/
@@ -14,3 +19,4 @@ build/
 .idea/
 .vscode/
 .xlsx
+*.xlsx

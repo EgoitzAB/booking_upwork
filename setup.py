@@ -11,7 +11,7 @@ setup(
     install_requires=required,
     entry_points={
         'console_scripts': [
-            'start=booking_upwork.src.main:main',
+            'start=src.mex:main',
         ],
     },
 )

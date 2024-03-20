@@ -224,10 +224,12 @@ def themed_country(site_list):
 
         for i, chunk in enumerate(chunks):
             process_format(chunk, f"{i+1}_part_done", 15 + i)
-
-if __name__=='__main__':
+def main():
     for i in apartah:
         time.sleep(22)
         print(i)
         themed_country(i)
     parse_results()
+
+if __name__=='__main__':
+    main()
