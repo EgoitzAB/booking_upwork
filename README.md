@@ -1,4 +1,4 @@
-# Project Title
+# BOOKING SCRAPING PROJECT
 
 This project was developed as part of a job for a client on Upwork. Although the code meets its objective and has been paid for, it was left in a state that requires some refactoring and improvements.
 
